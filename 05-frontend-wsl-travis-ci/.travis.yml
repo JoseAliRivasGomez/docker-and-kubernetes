@@ -5,10 +5,10 @@ services:
   - docker
 
 before_install:
-  - docker build -t JoseAliRivasGomez/docker-react-aws -f Dockerfile.dev .
+  - docker build -t myk3s/docker-react-aws -f Dockerfile.dev .
 
 script:
-  - docker run -e CI=true JoseAliRivasGomez/docker-react-aws npm run test
+  - docker run -e CI=true myk3s/docker-react-aws npm run test
 
 deploy:
   provider: elasticbeanstalk

@@ -1,0 +1,36 @@
+sudo: required
+language: generic
+
+services:
+  - docker
+
+before_install:
+  - docker build -t myk3s/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true myk3s/react-test npm test
+
+after_success:
+  - docker build -t myk3s/multi-client ./client
+  - docker build -t myk3s/multi-nginx ./nginx
+  - docker build -t myk3s/multi-server ./server
+  - docker build -t myk3s/multi-worker ./worker
+  # Log in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  # Take those images and push them to docker hub
+  - docker push myk3s/multi-client
+  - docker push myk3s/multi-nginx
+  - docker push myk3s/multi-server
+  - docker push myk3s/multi-worker
+
+deploy:
+  provider: elasticbeanstalk
+  region: 'us-east-1'
+  app: 'multi-docker'
+  env: 'MultiDocker-env'
+  bucket_name: 'elasticbeanstalk-us-east-1-923445559289'
+  bucket_path: 'docker-multi'
+  on:
+    branch: main
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
